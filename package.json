@@ -1,0 +1,22 @@
+{
+  "name": "web-app",
+  "version": "0.0.0",
+  "description": "Street50 broker",
+  "main": "serverMain.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Shmilky",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "express": "~4.13.4",
+    "gulp": "~3.9.1",
+    "gulp-live-server": "0.0.29",
+    "browser-sync": "~2.11.2",
+    "react": "~0.14.8",
+    "reactify": "~1.1.1",
+    "browserify": "~13.0.0",
+    "vinyl-source-stream": "~1.1.0",
+    "guid": "0.0.12"
+  }
+}

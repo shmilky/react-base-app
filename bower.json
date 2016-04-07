@@ -1,0 +1,22 @@
+{
+  "name": "web-app",
+  "description": "Street50 broker",
+  "main": "app.js",
+  "authors": [
+    "Shmilky"
+  ],
+  "license": "BSD-2-Clause",
+  "moduleType": [],
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "react": "^0.14.8"
+  }
+}
