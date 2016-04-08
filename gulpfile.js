@@ -1,72 +1,73 @@
-var browserSync = require('browser-sync');
-var gulp = require('gulp');
-var LiveServer = require('gulp-live-server');
-var source = require('vinyl-source-stream');
-//var babelify = require('babelify');
-var browserify = require('browserify');
-var reactify = require('reactify');
+"use strict";
 
-gulp.task('live-server',function(){
+var gulp = require('gulp');
+//var connect = require('gulp-connect'); //Runs a local dev server
+var LiveServer = require('gulp-live-server'); //Runs a local dev server
+var open = require('gulp-open'); //Open a URL in a web browser
+var browserify = require('browserify'); // Bundles JS
+var reactify = require('reactify');  // Transforms React JSX to JS
+var source = require('vinyl-source-stream'); // Use conventional text streams with Gulp
+var concat = require('gulp-concat'); //Concatenates files
+var lint = require('gulp-eslint'); //Lint JS files, including JSX
+
+var config = {
+    port: 7777,
+    devBaseUrl: 'http://localhost',
+    paths: {
+        html: './frontend/tmp/*.html',
+        js: './frontend/tmp/**/*.js',
+        css: [
+            'frontend/style/street.css',
+            'bower_components/bootstrap/dist/css/bootstrap.min.css',
+            'bower_components/bootstrap/dist/css/bootstrap-theme.min.css'
+        ],
+        dist: './public/.compiled',
+        mainJs: './frontend/backOffice.jsx'
+    }
+};
+
+//Start a local development server
+gulp.task('connect', function() {
     var server = new LiveServer('./server/serverMain');
     server.start();
 });
 
-gulp.task('bundleStreet', ['copy'], function(){
-    return browserify({
-        entries:'frontend/streetApp.jsx',
-//		entries:'app/components/GroceryListApp.jsx',
-        debug:true
-    })
-    .transform(reactify)
-    .bundle()
-    .pipe(source('app.js'))
-    .pipe(gulp.dest('./public/.compiled/js'));
+gulp.task('open', ['connect'], function() {
+    gulp.src('')
+        .pipe(open({ uri: config.devBaseUrl + ':' + config.port + '/'}));
 });
 
-gulp.task('bundleBackOffice', ['copy'], function(){
-    return browserify({
-        entries:'frontend/backOffice.jsx',
-//		entries:'app/components/GroceryListApp.jsx',
-        debug:true
-    })
-    .transform(reactify)
-    .bundle()
-    .pipe(source('app.js'))
-    .pipe(gulp.dest('./public/.compiled/js'));
+gulp.task('html', function() {
+    gulp.src(config.paths.html)
+        .pipe(gulp.dest(config.paths.dist));
+        //.pipe(connect.reload());
 });
 
-gulp.task('copy',function(){
-    gulp.src(['frontend/style/style.css'])
-        .pipe(gulp.dest('./public/.compiled/css'));
+gulp.task('js', function() {
+    browserify(config.paths.mainJs)
+        .transform(reactify)
+        .bundle()
+        .on('error', console.error.bind(console))
+        .pipe(source('app.js'))
+        .pipe(gulp.dest(config.paths.dist + '/js'));
+        //.pipe(connect.reload());
 });
 
-//gulp.task('temp',function(){
-//    gulp.src(['app/index.html','app/*.css'])
-//        .pipe(gulp.dest('./.tmp'));
-//
-//    gulp.src(['bower_components/**'])
-//        .pipe(gulp.dest('./.tmp/bower_components'));
-//});
-//
-//gulp.task('bundle-n-reload',['bundleStreet'],browserSync.reload)
-//
-//gulp.task('observe-all',function(){
-//    gulp.watch('app/**/*.*',['bundle-n-reload']);
-//    gulp.watch('app/*.*',['copy']);
-//    gulp.watch('./server/**/*.js',['live-server']);
-//});
-//
-//
-//gulp.task('serve', ['live-server','bundleStreet','temp','observe-all'], function() {
-gulp.task('serveStreetApp', ['bundleStreet', 'live-server'], function() {
-    browserSync.init(null, {
-        proxy: "http://localhost:7777",
-        port: 9001
-    });
+gulp.task('css', function() {
+    gulp.src(config.paths.css)
+        .pipe(concat('style.css'))
+        .pipe(gulp.dest(config.paths.dist + '/css'));
 });
-gulp.task('serveBackOffice', ['bundleBackOffice', 'live-server'], function() {
-    browserSync.init(null, {
-        proxy: "http://localhost:7777/backoffice",
-        port: 9001
-    });
+
+gulp.task('lint', function() {
+    return gulp.src(config.paths.js)
+        .pipe(lint({config: 'eslintConfig.json'}))
+        .pipe(lint.format());
 });
+
+gulp.task('watch', function() {
+    gulp.watch(config.paths.html, ['html']);
+    gulp.watch(config.paths.js, ['js', 'lint']);
+});
+
+gulp.task('default', ['html', 'js', 'css', 'lint', 'open', 'watch']);
